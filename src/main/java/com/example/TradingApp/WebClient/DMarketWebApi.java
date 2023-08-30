@@ -8,74 +8,76 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.time.Instant;
-
-@Service
 @Slf4j
+@Component
 public class DMarketWebApi {
 
 
-    private final String PUBLIC_KEY = "eae0b72d81fcbd370f947790e0ebca1cda1adcddceddb4f2fccadebee63545f2";
-    private final String PRIVATE_KEY = "d21e08041837d12c0e6e1f3e5d73cabf84db947380f31c573b294405c587320aeae0b72d81fcbd370f947790e0ebca1cda1adcddceddb4f2fccadebee63545f2";
-    private final String URL = "https://api.dmarket.com/account/v1/user";
+    private final static String PUBLIC_KEY = "eae0b72d81fcbd370f947790e0ebca1cda1adcddceddb4f2fccadebee63545f2";
+    private final static String PRIVATE_KEY = "d21e08041837d12c0e6e1f3e5d73cabf84db947380f31c573b294405c587320aeae0b72d81fcbd370f947790e0ebca1cda1adcddceddb4f2fccadebee63545f2";
+    public final static String URL = "https://api.dmarket.com";
+    private static final String timeStamp = getTimeStamp();
+    private static final RestTemplate restTemplate = new RestTemplate();
 
-    RestTemplate restTemplate = new RestTemplate();
+    public static final HttpHeaders headers = new HttpHeaders();
+    static {
+        headers.set("X-Api-Key", PUBLIC_KEY);
+        headers.set("X-Sign-Date", timeStamp);
+    }
+    public static String getResponse(String path, String method) {
 
-    public void getCall() throws Exception {
-        String nonce = Long.toString(Instant.now().getEpochSecond());
-        String api_url_path = "/account/v1/user";
-        String method = "GET";
-        String string_to_sign = method + api_url_path + nonce;
+        String string_to_sign =method +path + DMarketWebApi.getTimeStamp();
+        String signature = DMarketWebApi.getSignature(string_to_sign);
+
+        headers.set("X-Request-Sign", signature);
+
+        HttpEntity<String> httpEntity = new HttpEntity<>(headers);
+        ResponseEntity<String> response = restTemplate.exchange(DMarketWebApi.URL +path, HttpMethod.GET,httpEntity,String.class);
+        return response.toString();
+    }
+    public static String getTimeStamp(){
+        return Long.toString(Instant.now().getEpochSecond());
+    }
+    public static String getSignature(String string_to_sign) {
+
         String signature_prefix = "dmar ed25519 ";
-
         byte[] encoded = string_to_sign.getBytes(StandardCharsets.UTF_8);
-
-        byte[] PRIVATE_KEY_bytes = hexStringToByteArray(PRIVATE_KEY);
+        byte[] PRIVATE_KEY_bytes = hexStringToByteArray();
         byte[] signature_bytes = cryptoSign(encoded, PRIVATE_KEY_bytes);
         String signature = byteArrayToHexString(signature_bytes).substring(0, 128);
 
-        HttpHeaders headers = new HttpHeaders();
-
-        headers.set("X-Api-Key", PUBLIC_KEY);
-        headers.set("X-Request-Sign", signature_prefix + signature);
-        headers.set("X-Sign-Date", nonce);
-
-        log.info("signature " + signature);
-        log.info("timestamp " + nonce);
-
-        HttpEntity<String> httpEntity = new HttpEntity<>(headers);
-        ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.GET,httpEntity,String.class);
-        log.info(response.toString());
+        return signature_prefix + signature;
     }
-    public static byte[] hexStringToByteArray(String hex) {
-        int len = hex.length();
+
+    private static byte[] hexStringToByteArray() {
+        int len = DMarketWebApi.PRIVATE_KEY.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                    + Character.digit(hex.charAt(i + 1), 16));
+            data[i / 2] = (byte) ((Character.digit(DMarketWebApi.PRIVATE_KEY.charAt(i), 16) << 4)
+                    + Character.digit(DMarketWebApi.PRIVATE_KEY.charAt(i + 1), 16));
         }
         return data;
     }
-    public static String byteArrayToHexString(byte[] bytes) {
+    private static String byteArrayToHexString(byte[] bytes) {
         StringBuilder result = new StringBuilder();
         for (byte b : bytes) {
             result.append(String.format("%02x", b));
         }
         return result.toString();
     }
-    public static byte[] cryptoSign(byte[] data, byte[] secretKey) throws Exception {
+    private static byte[] cryptoSign(byte[] data, byte[] secretKey) {
         Security.addProvider(new BouncyCastleProvider());
-
         Ed25519PrivateKeyParameters privateKeyParams = new Ed25519PrivateKeyParameters(secretKey, 0);
-
         Ed25519Signer signer = new Ed25519Signer();
         signer.init(true, privateKeyParams);
         signer.update(data, 0, data.length);
+
         return signer.generateSignature();
     }
 }
