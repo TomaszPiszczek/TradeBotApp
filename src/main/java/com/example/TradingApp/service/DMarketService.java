@@ -27,9 +27,9 @@ public class DMarketService {
         return DMarketWebApi.getResponse(path, method);
     }
 
-    public static String getOffersByTitle() {
+    public static String getOffersByTitle(String title) {
 
-        String path = "/exchange/v1/offers-by-title?Title=Talon&Limit=10";
+        String path = "/exchange/v1/offers-by-title?gameId=a8db&Title=" + title +"&Limit=10";
         String  method ="GET";
         return DMarketWebApi.getResponse(path, method);
     }
