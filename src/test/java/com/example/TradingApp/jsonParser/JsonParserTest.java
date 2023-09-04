@@ -1,23 +1,31 @@
 package com.example.TradingApp.jsonParser;
 
 import com.example.TradingApp.service.DMarketService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertTrue;
+@Slf4j
 class JsonParserTest {
     @Test
-    void parseTest() throws JsonProcessingException {
+    void parseTestShouldReturnTitle() {
         String json = DMarketService.getItemsFromMarket();
-        json = json.substring(11);
-        JsonNode node = JsonParser.parse(json);
-       // String title = node.get("title").asText();
-        //System.out.println(title);
-        System.out.println(" ");
-        System.out.println(" ");
-        System.out.println(json);
+        JsonNode rootNode = JsonParser.parse(json);
+        JsonNode objectsNode = rootNode.get("objects");
+        String title="";
+        if (objectsNode.isArray()) {
+            for (JsonNode object : objectsNode) {
+                 title = "title " +  object.get("title").asText() +" "+ object.get("price").get("USD").asText();
+
+                log.info(title);
+            }
+        }
+        assertTrue(title.contains("title"));
+
+
+
+
     }
 
 }

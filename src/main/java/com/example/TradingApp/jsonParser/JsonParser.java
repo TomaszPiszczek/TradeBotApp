@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonParser {
-    private static ObjectMapper objectMapper = getDefaultObjectMapper();
+    private static final ObjectMapper objectMapper = getDefaultObjectMapper();
 
     private static ObjectMapper getDefaultObjectMapper() {
         ObjectMapper defaultObjectMapper = new ObjectMapper();
@@ -13,8 +13,14 @@ public class JsonParser {
 
         return defaultObjectMapper;
     }
-    public static JsonNode parse(String jsonSrc) throws JsonProcessingException {
-        return objectMapper.readTree(jsonSrc);
+    public static JsonNode parse(String jsonSrc) {
+        jsonSrc = jsonSrc.substring(11);
+
+        try {
+            return objectMapper.readTree(jsonSrc);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
