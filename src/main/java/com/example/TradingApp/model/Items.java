@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Items {
     public List<Item> items;
@@ -34,9 +35,11 @@ public class Items {
                         , object.get("discount").asInt()
                         , object.get("extra").get("offerId").asText()
                         , object.get("type").asText()
+                        , object.get("extra").get("category").asText()
                 );
-
-                this.items.add(item);
+                if(item.inMarket()){
+                   items.add(item);
+                }
             }
         }
         return items;
@@ -46,8 +49,23 @@ public class Items {
         Comparator<Item> itemComparator = Comparator.comparingInt(Item::discount);
         unSortedList.sort(itemComparator.reversed());
 
+        if(unSortedList.size()>100){
+            unSortedList = unSortedList.subList(0,100);
+        }
+
+
         return unSortedList;
     }
+
+    public static List<Item> removeWrongItemTitle(List<Item> list, String title) {
+
+        list = list.stream()
+                .filter(item -> item.title().equals(title))
+                .collect(Collectors.toList());
+
+        return list;
+    }
+
 
     public void printItems() {
         for (Item item : items) {
