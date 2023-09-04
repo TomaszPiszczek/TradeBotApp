@@ -29,22 +29,15 @@ public class DMarketService {
 
     public static String getOffersByTitle(String title) {
 
-        String path = "/exchange/v1/offers-by-title?gameId=a8db&Title=" + title +"&Limit=10";
+        String path = "/exchange/v1/offers-by-title?gameId=a8db&Title=" + title +"&Limit=1000";
         String  method ="GET";
         return DMarketWebApi.getResponse(path, method);
     }
     public static String getItemsFromMarket(){
-        String path = "/exchange/v1/market/items?gameId=a8db&limit=50&offset=0&orderBy=rebate&currency=USD&priceFrom=0&priceTo=0";
+        String path = "/exchange/v1/market/items?gameId=a8db&limit=50&orderBy=updated&orderDir=desc&currency=USD";
         String method ="GET";
         return DMarketWebApi.getResponse(path, method);
     }
-
-
-
-
-
-
-
 
 
 
