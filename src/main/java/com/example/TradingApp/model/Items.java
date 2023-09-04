@@ -1,10 +1,11 @@
 package com.example.TradingApp.model;
 
 import com.example.TradingApp.jsonParser.JsonParser;
-import com.example.TradingApp.service.DMarketService;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class Items {
     public List<Item> items;
@@ -12,12 +13,13 @@ public class Items {
     /**
      * Parse Json list to Item list
      */
-    public Items() {
-       this.items = sortByDiscount(itemsToList());
+    public Items(String jsonSrc) {
+       this.items = sortByDiscount(itemsToList(jsonSrc));
     }
 
-    private List<Item> itemsToList(){
-        JsonNode rootNode = JsonParser.parse(DMarketService.getItemsFromMarket());
+    private List<Item> itemsToList(String jsonSrc){
+
+        JsonNode rootNode = JsonParser.parse(jsonSrc);
         JsonNode objectsNode = rootNode.get("objects");
         this.items = new ArrayList<>();
 
