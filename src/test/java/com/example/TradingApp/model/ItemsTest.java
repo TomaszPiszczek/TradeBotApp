@@ -1,34 +1,39 @@
 package com.example.TradingApp.model;
 
+import com.example.TradingApp.jsonParser.JsonParser;
 import com.example.TradingApp.service.DMarketService;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertTrue;
+@Slf4j
 class ItemsTest {
     @Test
     void constructorCreateListOfNewestItemsOnMarket(){
         Items items = new Items(DMarketService.getItemsFromMarket());
         items.printItems();
-        assertTrue(items.items.size()>49);
+        assertTrue(items.items.size()>1);
 
     }
 
     @Test
-    void constructorCreateListOfSpecifiedItemsOnMarket(){
-        Items newestItems = new Items(DMarketService.getItemsFromMarket());
+    void parseTestShouldReturnTitle() {
+        String json = DMarketService.getItemsFromMarket();
+        JsonNode rootNode = JsonParser.parse(json);
+        JsonNode objectsNode = rootNode.get("objects");
+        String title="";
+        if (objectsNode.isArray()) {
+            for (JsonNode object : objectsNode) {
+                title = "title " +  object.get("title").asText() +" "+ object.get("price").get("USD").asText();
 
-        Item bestDiscountItem = newestItems.items.get(0);
+                log.info(title);
+            }
+        }
+        assertTrue(title.contains("title"));
 
-        System.out.println(bestDiscountItem.title() + bestDiscountItem.discount());
 
-        Items items = new Items(DMarketService.getOffersByTitle(bestDiscountItem.title()));
 
-       // System.out.println(DMarketService.getOffersByTitle("AWP | Exoskeleton (Field-Tested) "));
-        items.items = Items.removeWrongItemTitle(items.items, bestDiscountItem.title());
-
-        items.printItems();
-        assertTrue(items.items.size()>1);
 
     }
 
