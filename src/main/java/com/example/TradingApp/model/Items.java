@@ -2,12 +2,13 @@ package com.example.TradingApp.model;
 
 import com.example.TradingApp.jsonParser.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
+@Slf4j
 public class Items {
     public List<Item> items;
 
@@ -15,7 +16,7 @@ public class Items {
      * Parse Json list to Item list
      */
     public Items(String jsonSrc) {
-       this.items = sortByDiscount(itemsToList(jsonSrc));
+       this.items = sortByPrice(itemsToList(jsonSrc));
     }
 
     private List<Item> itemsToList(String jsonSrc){
@@ -45,9 +46,9 @@ public class Items {
         return items;
     }
 
-    private List<Item> sortByDiscount(List<Item> unSortedList){
-        Comparator<Item> itemComparator = Comparator.comparingInt(Item::discount);
-        unSortedList.sort(itemComparator.reversed());
+    private List<Item> sortByPrice(List<Item> unSortedList){
+        Comparator<Item> itemComparator = Comparator.comparingDouble(Item::price);
+        unSortedList.sort(itemComparator);
 
         if(unSortedList.size()>100){
             unSortedList = unSortedList.subList(0,100);
@@ -69,7 +70,7 @@ public class Items {
 
     public void printItems() {
         for (Item item : items) {
-            System.out.printf("Item[title=%-60s, inMarket=%s, status=%s, price=%s, currency=%s, discount=%d, offerId=%s, type=%s]%n",
+            log.info("Item[title=%-60s, inMarket=%s, status=%s, price=%s, currency=%s, discount=%d, offerId=%s, type=%s]%n",
                     item.title(), item.inMarket(), item.status(), item.price(), item.currency(), item.discount(), item.offerId(), item.title());
         }
 
