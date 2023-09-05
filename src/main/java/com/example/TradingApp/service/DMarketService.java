@@ -34,10 +34,11 @@ public class DMarketService {
         return DMarketWebApi.getResponse(path, method);
     }
     public static String getItemsFromMarket(){
-        String path = "/exchange/v1/market/items?gameId=a8db&limit=50&orderBy=updated&orderDir=desc&currency=USD";
+        String path = "/exchange/v1/market/items?gameId=a8db&limit=10&orderBy=updated&orderDir=desc&currency=USD&priceFrom=100";
         String method ="GET";
         return DMarketWebApi.getResponse(path, method);
     }
+
 
 
 
